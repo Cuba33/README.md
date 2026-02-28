@@ -1,75 +1,131 @@
-# 🔐 Laboratório de Ataques de Força Bruta com Kali Linux e Medusa
+# 🔐 Brute Force Attack Lab – Kali Linux & Medusa
 
-## 📌 Objetivo
+## 📌 Sobre o Projeto
 
-Simular ataques de força bruta em ambiente controlado utilizando Kali Linux contra Metasploitable 2, aplicando técnicas de enumeração, exploração e análise de mitigação.
+Este projeto documenta a simulação de ataques de força bruta em ambiente controlado utilizando Kali Linux contra a máquina vulnerável Metasploitable 2.
+
+O objetivo é demonstrar conhecimentos em:
+
+- Enumeração de serviços
+- Ataques de força bruta
+- Password spraying
+- Validação de credenciais
+- Análise de vulnerabilidades
+- Proposição de medidas de mitigação
 
 ---
 
-## 🖥️ Ambiente Utilizado
+## 🖥️ Ambiente de Laboratório
 
 - VirtualBox
 - Kali Linux (Máquina Atacante)
-- Metasploitable 2 (Máquina Vulnerável)
-- Rede Host-Only
+- Metasploitable 2 (Máquina Alvo)
+- Rede Host-Only (Ambiente isolado)
 
 ---
 
-## 🔎 Enumeração
+## 🔎 1️⃣ Enumeração Inicial
 
-Foi realizada enumeração inicial utilizando Nmap:
+Ferramenta utilizada: Nmap
+
+Comando executado:
 
 nmap -sV 192.168.56.102
 
-### Serviços Identificados:
+### Serviços Identificados
 
-- FTP (21) – vsftpd 2.3.4
-- HTTP (80) – Apache 2.2.8
-- SMB (139, 445) – Samba 3.x
-- Outros serviços legados (Telnet, Rlogin, MySQL, PostgreSQL)
+| Porta | Serviço | Versão | Risco |
+|-------|---------|--------|-------|
+| 21 | FTP | vsftpd 2.3.4 | Alto |
+| 23 | Telnet | Linux telnetd | Alto |
+| 80 | HTTP | Apache 2.2.8 | Médio |
+| 139/445 | SMB | Samba 3.x | Alto |
+| 3306 | MySQL | 5.0.51a | Médio |
+
+A enumeração revelou múltiplos serviços legados e vulneráveis, aumentando significativamente a superfície de ataque.
 
 ---
 
-## ⚔️ Ataque 1 – Força Bruta em FTP
+# ⚔️ 2️⃣ Ataque de Força Bruta – FTP
 
-Ferramenta utilizada: Medusa
+Ferramenta: Medusa
 
 Comando:
 
 medusa -h 192.168.56.102 -U users.txt -P passwords.txt -M ftp
 
-### Resultado:
+### 🎯 Resultado
 
-Credenciais encontradas:
+Credenciais encontradas com sucesso:
+
 Usuário: msfadmin  
 Senha: msfadmin  
 
-Validação realizada via login manual no serviço FTP.
+Validação realizada manualmente via login FTP.
+
+### 🔎 Análise
+
+- Não há limitação de tentativas de login
+- Não existe política de senha forte
+- Serviço FTP transmite credenciais em texto plano
+
+Impacto: Alto
 
 ---
 
-## 🛡️ Análise de Risco
+# 💻 3️⃣ Password Spraying – SMB
 
-O servidor permite múltiplas tentativas de autenticação sem bloqueio, facilitando ataques de força bruta.  
-A senha encontrada é fraca e previsível, demonstrando ausência de política de segurança adequada.
+Após enumeração de usuários via enum4linux, foi realizado teste de password spraying.
+
+Comando:
+
+medusa -h 192.168.56.102 -U users.txt -p password -M smbnt
+
+Objetivo: testar uma única senha comum contra múltiplos usuários.
+
+Esse tipo de ataque é eficiente contra ambientes corporativos com políticas fracas de senha.
 
 ---
 
-## 🔐 Medidas de Mitigação
+# 🌐 4️⃣ Força Bruta em Aplicação Web (DVWA)
+
+A aplicação DVWA foi acessada via:
+
+http://192.168.56.102/dvwa
+
+Configuração de segurança: LOW
+
+Foi testado o módulo de Brute Force para simular automação de tentativas de login.
+
+---
+
+# 🛡️ Medidas de Mitigação Recomendadas
 
 - Implementação de política de senha forte
-- Bloqueio de conta após tentativas falhas
-- Monitoramento de logs
+- Bloqueio de conta após múltiplas tentativas falhas
+- Implementação de autenticação multifator (MFA)
+- Monitoramento e análise de logs
 - Implementação de Fail2Ban
-- Substituição de FTP por SFTP
+- Desativação de serviços legados (Telnet, FTP)
+- Atualização de versões vulneráveis de serviços
 
 ---
 
-## 📚 Conclusão
+# 📊 Lições Aprendidas
 
-O laboratório demonstrou como serviços mal configurados e credenciais fracas podem comprometer um sistema.  
-A prática reforça a importância de controles preventivos contra ataques automatizados.
+- A enumeração é etapa crítica antes de qualquer exploração.
+- Serviços legados representam alto risco.
+- Senhas fracas continuam sendo uma das principais vulnerabilidades.
+- Controles de segurança básicos poderiam impedir o ataque.
 
 ---
 
-⚠️ Todos os testes foram realizados em ambiente controlado para fins educacionais.
+# 📚 Conclusão
+
+Este laboratório permitiu compreender na prática como ataques automatizados de força bruta funcionam e como ambientes mal configurados podem ser comprometidos rapidamente.
+
+O projeto reforça a importância de controles preventivos, monitoramento e boas práticas de segurança da informação.
+
+---
+
+⚠️ Todos os testes foram realizados em ambiente isolado e controlado para fins exclusivamente educacionais.
